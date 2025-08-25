@@ -2,7 +2,7 @@
 
 This directory contains all the scripts needed to retrain the bomb detection model from scratch, from raw data processing to final model training and evaluation.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # 1. Set up environment (UV - Recommended)
@@ -21,7 +21,7 @@ uv run python train_model.py
 uv run python run_complete_pipeline.py
 ```
 
-## 📋 Prerequisites
+## Prerequisites
 
 ### Environment Setup
 
@@ -87,7 +87,7 @@ Bomb-Fishing/
 - Place your compressed data files (`.zip`) in `data/compressed_new_data/`
 - Place corresponding CSV annotation files in `data/annotated_spreadsheets/`
 
-## 📝 Step-by-Step Pipeline
+## Step-by-Step Pipeline
 
 All scripts now support configurable input/output directories via command-line arguments. See `--help` for each script.
 
@@ -258,11 +258,11 @@ python train_model.py --help
 - `models/training_metadata.txt` - Training details and metrics
 - `logs/` - TensorBoard logs
 
-**📋 Model Format Notes:**
+**Model Format Notes:**
 - **New models** (from this retraining pipeline): `.keras` files - use with UV and modern Python
 - **Legacy models** (existing `code/model/`): Directory format - use with conda environment
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Input/Output Directory Configuration
 
@@ -333,7 +333,7 @@ window_length = 2.88        # Seconds, matches original training
 tolerance_seconds = 2.0     # Tolerance for matching annotations
 ```
 
-## 🧪 Testing and Validation
+## Testing and Validation
 
 ### Verify Data Processing
 
@@ -365,7 +365,7 @@ uv run python tune_threshold.py --model-path models/retrained_best_model.keras -
 
 #### For Legacy model/ Directory Models
 
-**⚠️ Important**: Legacy models (saved as `model/` directories) require the conda environment due to older TensorFlow/AutoKeras compatibility:
+**Important**: Legacy models (saved as `model/` directories) require the conda environment due to older TensorFlow/AutoKeras compatibility:
 
 ```bash
 # Set up legacy environment
@@ -382,7 +382,7 @@ python tune_threshold.py --model-path ../code/model --train-pickle combined_trai
 python parent_script.py  # Edit paths in script first
 ```
 
-## 📊 Expected Performance Metrics
+## Expected Performance Metrics
 
 After successful training, you should see:
 
@@ -392,7 +392,7 @@ After successful training, you should see:
 - **Precision**: >0.8 (bomb detection)
 - **Recall**: >0.9 (bomb detection)
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -446,7 +446,7 @@ print(f'Duration: {len(audio)/sr:.2f}s, Sample rate: {sr}Hz')
 "
 ```
 
-## 🔄 Resuming Interrupted Runs
+## Resuming Interrupted Runs
 
 The pipeline is designed to be resumable:
 
@@ -464,7 +464,7 @@ rm -f *_features_labels_2.pickle
 # Then re-run pipeline
 ```
 
-## 📈 Monitoring Training
+## Monitoring Training
 
 ### TensorBoard
 
@@ -483,7 +483,7 @@ Training progress is displayed in real-time showing:
 - AutoKeras trial results
 - Validation performance
 
-## 🎯 Model Deployment
+## Model Deployment
 
 ### For New .keras Models (Recommended)
 
@@ -503,11 +503,11 @@ For existing models in directory format (e.g., `code/model/`):
 3. **Batch processing**: Use `parent_script.py` and `child_script.py` (edit paths first)
 4. **Production deployment**: Copy entire `model/` directory
 
-**🔄 Model Format Differences:**
+**Model Format Differences:**
 - **New (.keras)**: Single file, modern TensorFlow/AutoKeras, UV compatible
 - **Legacy (model/)**: Directory with variables/, saved_model.pb, requires older conda env
 
-## 📚 Additional Resources
+## Additional Resources
 
 - **Original training notes**: `../training_improvements_summary.md`
 - **Memory optimization**: `../MEMORY_OPTIMIZATION_GUIDE.md`
@@ -516,7 +516,7 @@ For existing models in directory format (e.g., `code/model/`):
 
 ---
 
-## 🤝 Support
+## Support
 
 If you encounter issues:
 
@@ -529,7 +529,7 @@ For data-related questions, use the verification commands to check data integrit
 
 ---
 
-## 🔧 Legacy Model Support
+## Legacy Model Support
 
 This directory also contains scripts for working with legacy models (saved as `model/` directories).
 

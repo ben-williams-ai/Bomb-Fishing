@@ -1,6 +1,6 @@
 # Quick Start Guide - Model Retraining
 
-## 🚀 5-Minute Setup
+## 5-Minute Setup
 
 ```bash
 # 1. Environment setup with UV (Recommended - Zero Config!)
@@ -20,14 +20,14 @@ uv run python run_complete_pipeline.py
 uv run python data_preprocessing.py && uv run python apply_augmentation.py && uv run python create_train_test_split.py && uv run python extract_features.py && uv run python train_model.py
 ```
 
-## 🌟 Why UV?
+## Why UV?
 
 - **Zero Configuration**: No virtual environment setup needed
 - **Automatic Dependencies**: Installs packages from pyproject.toml automatically  
 - **Fast**: Much faster dependency resolution than pip/conda
 - **Reliable**: Consistent environments across machines
 
-## 📁 Required Files
+## Required Files
 
 **Before starting, ensure you have:**
 
@@ -43,7 +43,7 @@ data/annotated_spreadsheets/
 └── [other annotation files]
 ```
 
-## ⏱️ Expected Timeline
+## Expected Timeline
 
 | Step | Script | Time | Output |
 |------|--------|------|--------|
@@ -55,7 +55,7 @@ data/annotated_spreadsheets/
 
 **Total time: 2-4 hours** (depending on data size and hardware)
 
-## ✅ Success Indicators
+## Success Indicators
 
 After each step, you should see:
 
@@ -65,7 +65,7 @@ After each step, you should see:
 4. **Feature extraction**: `train_features_labels_2.pickle` and `test_features_labels_2.pickle`
 5. **Training**: `models/retrained_best_model.keras` with >85% accuracy
 
-## 🆘 Quick Troubleshooting
+## Quick Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -74,7 +74,7 @@ After each step, you should see:
 | Environment issues | Check UV is installed: `uv --version`, test: `uv run python --version` |
 | Low accuracy (<80%) | Check data quality, verify augmentation worked, try longer training |
 
-## 🧪 Quick Test
+## Quick Test
 
 ### For New .keras Models (from this pipeline)
 ```bash
@@ -94,7 +94,7 @@ python ../simple_inference.py ../code/model test_audio_file.wav
 python parent_script.py  # Edit paths first
 ```
 
-## 📋 Checklist
+## Checklist
 
 - [ ] Environment set up and tested
 - [ ] Data files in correct directories
@@ -105,7 +105,7 @@ python parent_script.py  # Edit paths first
 - [ ] Model trained successfully (.keras file created)
 - [ ] Model tested on sample audio
 
-## 🔄 Model Format Info
+## Model Format Info
 
 This pipeline creates **new .keras models** that work with UV and modern Python. For **legacy model/ directory models**, use the conda environment and legacy scripts.
 
