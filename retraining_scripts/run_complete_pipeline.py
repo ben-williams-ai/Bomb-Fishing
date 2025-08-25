@@ -184,13 +184,13 @@ def main():
     logger.info("\n📋 Next Steps:")
     if use_uv:
         logger.info(
-            "1. Test your model: uv run python ../simple_inference.py ../models/retrained_best_model.keras test_file.wav"
+            "1. Test your model: uv run python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/"
         )
         logger.info("2. Run evaluation: uv run python eval_model.py")
         logger.info("3. Tune threshold: uv run python tune_threshold.py")
     else:
         logger.info(
-            "1. Test your model: python ../simple_inference.py ../models/retrained_best_model.keras test_file.wav"
+            "1. Test your model: python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/"
         )
         logger.info("2. Run evaluation: python eval_model.py")
         logger.info("3. Tune threshold: python tune_threshold.py")

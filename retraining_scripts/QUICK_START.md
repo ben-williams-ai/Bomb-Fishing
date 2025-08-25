@@ -69,7 +69,7 @@ After each step, you should see:
 
 | Problem | Solution |
 |---------|----------|
-| Memory error during training | Use `uv run python train_model.py --use-subset --subset-ratio 0.3` |
+| Memory error during training | Reduce batch size in `train_model.py`: set `BATCH_SIZE = 16` and `MAX_TRIALS = 10` |
 | Missing data files | Check file paths and ensure data is in correct directories |
 | Environment issues | Check UV is installed: `uv --version`, test: `uv run python --version` |
 | Low accuracy (<80%) | Check data quality, verify augmentation worked, try longer training |
@@ -78,8 +78,8 @@ After each step, you should see:
 
 ### For New .keras Models (from this pipeline)
 ```bash
-# Test your newly trained model with UV
-uv run python ../simple_inference.py models/retrained_best_model.keras test_audio_file.wav
+# Test your newly trained model with UV - use parent_script.py for inference
+uv run python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/
 
 # Expected output: Detection results with confidence scores
 ```
@@ -88,10 +88,10 @@ uv run python ../simple_inference.py models/retrained_best_model.keras test_audi
 ```bash
 # Test legacy models (requires conda environment)
 conda activate conda-bomb-env  # using ../set_up/linux_env.yml
-python ../simple_inference.py ../code/model test_audio_file.wav
+python parent_script.py --model-path ../code/model --input-dir test_data/
 
-# Or use legacy batch processing
-python parent_script.py  # Edit paths first
+# Or use legacy batch processing with edited paths
+python parent_script.py  # Edit paths in script first
 ```
 
 ## Checklist

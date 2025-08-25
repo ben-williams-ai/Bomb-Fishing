@@ -42,7 +42,7 @@ uv run python --version  # Test that UV is working
 # From project root
 uv venv .venv
 source .venv/bin/activate
-uv pip install -r requirements_new_stack.txt
+uv pip install -e .
 ```
 
 #### Option 3: Automated UV Script
@@ -296,13 +296,13 @@ uv run python run_complete_pipeline.py --data-dir /custom/data/path
 
 ### Memory Optimization
 
-For systems with limited memory:
+For systems with limited memory, edit these parameters in `train_model.py`:
 
 ```python
-# In train_model.py, modify these parameters:
-class ModelTrainer:
-    def __init__(self, data_dir: str = ".", use_subset: bool = True, subset_ratio: float = 0.4):
-        # Use subset=True and adjust ratio as needed
+# In ModelTrainer.__init__(), modify these values:
+self.BATCH_SIZE = 16           # Reduce from 32
+self.MAX_TRIALS = 10           # Reduce from 50  
+self.EPOCHS = 50               # Reduce from 100
 ```
 
 ### Training Parameters
@@ -354,7 +354,7 @@ uv run python data_preprocessing.py --verify-month 2023_aug_21 --verify-files YB
 
 ```bash
 # Quick inference test with new .keras model
-uv run python ../simple_inference.py models/retrained_best_model.keras test_data/sample.wav
+uv run python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/
 
 # Full evaluation on new .keras model
 uv run python eval_model.py --model-path models/retrained_best_model.keras --test-pickle test_features_labels_2.pickle
@@ -398,8 +398,10 @@ After successful training, you should see:
 
 #### 1. Memory Errors During Training
 ```bash
-# Solution: Use memory-optimized training
-uv run python train_model.py --use-subset --subset-ratio 0.3
+# Solution: Reduce batch size or max trials in train_model.py
+# Edit the script to set smaller values:
+# self.BATCH_SIZE = 16  # Reduce from 32
+# self.MAX_TRIALS = 10  # Reduce from 50
 ```
 
 #### 2. Missing Data Files
@@ -435,9 +437,6 @@ Check these locations for detailed logs:
 If you suspect data issues:
 
 ```bash
-# Run comprehensive data analysis
-uv run python ../data_analysis.py
-
 # Check individual files
 uv run python -c "
 import librosa
@@ -490,8 +489,8 @@ Training progress is displayed in real-time showing:
 After successful training:
 
 1. **Model location**: `models/retrained_best_model.keras`
-2. **Test inference**: `uv run python ../simple_inference.py models/retrained_best_model.keras test.wav`
-3. **Batch processing**: `uv run python ../modern_inference.py`
+2. **Test inference**: `uv run python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/`
+3. **Batch processing**: Use `parent_script.py` for batch processing multiple files
 4. **Production deployment**: Copy `.keras` file to production environment
 
 ### For Legacy model/ Directory Models
@@ -499,7 +498,7 @@ After successful training:
 For existing models in directory format (e.g., `code/model/`):
 
 1. **Environment setup**: `conda activate conda-bomb-env` (using `linux_env.yml`)
-2. **Test inference**: `python ../simple_inference.py ../code/model test.wav`
+2. **Test inference**: `python parent_script.py --model-path ../code/model --input-dir test_data/`
 3. **Batch processing**: Use `parent_script.py` and `child_script.py` (edit paths first)
 4. **Production deployment**: Copy entire `model/` directory
 
@@ -509,10 +508,9 @@ For existing models in directory format (e.g., `code/model/`):
 
 ## Additional Resources
 
-- **Original training notes**: `../training_improvements_summary.md`
-- **Memory optimization**: `../MEMORY_OPTIMIZATION_GUIDE.md`
-- **Environment setup**: `../UV_ENVIRONMENT_REBUILD_README.md`
+- **Environment setup**: `../rebuild_environment_uv.sh` - Automated UV setup script
 - **Inference guide**: `../INFERENCE_INSTRUCTIONS.md`
+- **Project structure**: See main `../README.md` for overview
 
 ---
 

@@ -78,7 +78,7 @@ uv run python retraining_scripts/parent_script.py --help
 ```bash
 uv venv .venv
 source .venv/bin/activate
-uv pip install -r requirements_new_stack.txt
+uv pip install -e .
 ```
 
 ### Option 3: Automated UV Setup
@@ -88,8 +88,8 @@ uv pip install -r requirements_new_stack.txt
 
 ### Option 4: Conda (Traditional)
 ```bash
-conda env create -f set_up/macos_arm64_env_fixed_new.yml
-conda activate bomb-audio-env-arm64-new
+conda env create -f set_up/linux_env.yml
+conda activate conda-bomb-env
 ```
 
 
