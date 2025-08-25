@@ -35,8 +35,7 @@ dependencies = [
     # Jupyter
     "jupyter",
     "ipykernel",
-    "tensorflow-macos>=2.16.0",
-    "tensorflow-metal>=0.8.0",
+    "tensorflow>=2.16.0",
     "autokeras>=2.0.0",
     "keras>=3.10.0",
 ]
