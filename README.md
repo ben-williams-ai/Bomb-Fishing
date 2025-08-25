@@ -12,29 +12,31 @@ uv run python run_complete_pipeline.py
 # With custom data directory
 uv run python run_complete_pipeline.py --data-dir /path/to/your/data
 ```
-📖 **Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
+**Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
 
-### 🎯 For Inference Only (Using Pre-trained Models)
+### For Inference Only (Using Pre-trained Models)
 
 #### Modern .keras Models (Recommended)
 ```bash
-# Quick single-file inference
-uv run python simple_inference.py models/retrained_best_model.keras test_file.wav
+# Run inference with trained model
+cd retraining_scripts
+uv run python parent_script.py --model-path ../models/your_model.keras --input-dir /path/to/audio/files
 
-# Batch processing multiple files  
-uv run python modern_inference.py
+# With specific output directory
+uv run python parent_script.py --model-path ../models/your_model.keras --input-dir /path/to/audio --output-dir results/
 ```
 
 #### Legacy Models (Directory Format)
 ```bash
 # Requires conda environment setup
 conda activate conda-bomb-env
-python simple_inference.py code/model test_file.wav
+cd retraining_scripts
+python parent_script.py --model-path ../code/model --input-dir /path/to/audio/files
 ```
 
 **Inference Guide**: [INFERENCE_INSTRUCTIONS.md](INFERENCE_INSTRUCTIONS.md)
 
-##  Project Structure
+## Project Structure
 
 ```
 Bomb-Fishing/
@@ -52,8 +54,6 @@ Bomb-Fishing/
 ├── code/                     # Legacy inference infrastructure
 │   └── model/                # Legacy model (directory format)
 ├── models/                   # Modern trained models (.keras files)
-├── simple_inference.py       # Single file inference
-├── modern_inference.py       # Batch processing
 ├── set_up/                   # Environment configurations
 │   └── linux_env.yml           # Conda environment for legacy models
 └── data/                     # Your datasets (created during setup)
@@ -74,7 +74,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv run python --version  # Test that UV works
 
 # Dependencies are automatically installed when you run scripts
-uv run python simple_inference.py --help
+uv run python retraining_scripts/parent_script.py --help
 ```
 ### Option 2: UV with Manual Environment
 ```bash
@@ -96,14 +96,14 @@ conda activate bomb-audio-env-arm64-new
 
 
 
-## 🔄 Model Formats
+## Model Formats
 
 | Model Type | Format | Environment | Usage |
 |---------------|-----------|----------------|----------|
-| **Modern (.keras)** | Single `.keras` file | UV + Python 3.9+ | `uv run python script.py model.keras` |
-| **Legacy (directory)** | `model/` folder | Conda + TF 2.10 | `conda activate env && python script.py model/` |
+| **Modern (.keras)** | Single `.keras` file | UV + Python 3.9+ | `uv run python retraining_scripts/parent_script.py --model-path model.keras` |
+| **Legacy (directory)** | `model/` folder | Conda + TF 2.10 | `conda activate env && python retraining_scripts/parent_script.py --model-path model/` |
 
-    ##  Getting Started Checklist
+## Getting Started Checklist
 
 ### For New Researchers
 - [ ] **Install UV**: `curl -LsSf https://astral.sh/uv/install.sh | sh`  
