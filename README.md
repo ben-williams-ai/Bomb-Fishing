@@ -34,13 +34,11 @@ cd retraining_scripts
 python parent_script.py --model-path ../code/model --input-dir /path/to/audio/files
 ```
 
-**Inference Guide**: [INFERENCE_INSTRUCTIONS.md](INFERENCE_INSTRUCTIONS.md)
-
 ## Project Structure
 
 ```
 Bomb-Fishing/
-├── retraining_scripts/       # Research-ready retraining pipeline
+├── retraining_scripts/       # Retraining pipeline
 │   ├── README.md             # Complete retraining documentation
 │   ├── QUICK_START.md        # 5-minute setup guide
 │   ├── run_complete_pipeline.py  # One-click full pipeline
@@ -105,7 +103,7 @@ conda activate bomb-audio-env-arm64-new
 
 ## Getting Started Checklist
 
-### For New Researchers
+
 - [ ] **Install UV**: `curl -LsSf https://astral.sh/uv/install.sh | sh`  
 - [ ] **Prepare Data**: Place `.tar.gz` files in `data/compressed_new_data/`
 - [ ] **Add Annotations**: Place `.csv` files in `data/annotated_spreadsheets/`
