@@ -113,14 +113,23 @@ class DataPreprocessor:
         month_dirs = {}
 
         for compressed_file in compressed_files:
-            # Extract month name from filename
-            month_match = re.search(r"(\d{4}_\w+_\d+)", compressed_file.name)
+            # Extract full base name without extension for exact CSV matching
+            # e.g., "north_2023_jun_28.zip" -> "north_2023_jun_28"
+            base_name = compressed_file.stem  # removes .zip/.7z extension
+
+            # Extract just the date part for directory naming
+            month_match = re.search(r"(\d{4}_\w+_\d+)", base_name)
             if not month_match:
                 logger.warning(f"Could not parse month from {compressed_file.name}")
                 continue
 
-            month = month_match.group(1)
+            month = month_match.group(1)  # Just the date part for directory
             month_dir = self.extracted_dir / month
+
+            # Store the full base name for CSV lookup
+            if not hasattr(self, "file_mappings"):
+                self.file_mappings = {}
+            self.file_mappings[month] = base_name
 
             if month_dir.exists():
                 logger.info(f"Month {month} already extracted, skipping...")
@@ -153,21 +162,22 @@ class DataPreprocessor:
         return month_dirs
 
     def parse_csv_annotations(self, month: str) -> pd.DataFrame:
-        """Parse CSV annotations for a given month."""
-        # Convert from YYYY_MMM_dd to YYYY_MMMdd format for CSV files
-        # e.g., 2023_nov_23 -> 2023_nov23
-        month_parts = month.split("_")
-        if len(month_parts) == 3:
-            csv_month = f"{month_parts[0]}_{month_parts[1]}{month_parts[2]}"
+        """Parse CSV annotations for a given month using exact filename matching."""
+        # Use the stored mapping to find the exact base name
+        if hasattr(self, "file_mappings") and month in self.file_mappings:
+            base_name = self.file_mappings[month]
+            csv_file = self.annotations_dir / f"{base_name}.csv"
         else:
-            csv_month = month
-
-        csv_file = self.annotations_dir / f"south_{csv_month}.csv"
+            # Fallback to old behavior for backwards compatibility
+            month_parts = month.split("_")
+            if len(month_parts) == 3:
+                csv_month = f"{month_parts[0]}_{month_parts[1]}{month_parts[2]}"
+            else:
+                csv_month = month
+            csv_file = self.annotations_dir / f"south_{csv_month}.csv"
 
         if not csv_file.exists():
-            logger.warning(
-                f"CSV file not found for {month} (tried {csv_month}): {csv_file}"
-            )
+            logger.warning(f"CSV file not found for {month}: {csv_file}")
             return pd.DataFrame()
 
         df = pd.read_csv(csv_file)
@@ -259,7 +269,7 @@ class DataPreprocessor:
             logger.warning(f"No annotations found for {month}")
             return 0, 0
 
-        # Find detection files 
+        # Find detection files
         # (robust to an extra nested month folder which happens when zipping on linux)
         detection_dir = month_dir / "Detected_bombs"
         if not detection_dir.exists():
@@ -271,7 +281,6 @@ class DataPreprocessor:
             else:
                 logger.warning(f"Detection directory not found: {month_dir}/Detected_bombs (or nested)")
                 return 0, 0
-
 
         detection_files = list(detection_dir.glob("*.wav"))
         logger.info(f"Found {len(detection_files)} detection files for {month}")
@@ -505,7 +514,7 @@ class DataPreprocessor:
         )
 
     def get_existing_extracted_dirs(self) -> Dict[str, Path]:
-        """Get mapping of already extracted month directories."""
+        """Get mapping of already extracted month directories and create file mappings."""
         logger.info("Looking for existing extracted directories...")
 
         month_dirs = {}
@@ -513,17 +522,45 @@ class DataPreprocessor:
             logger.error(f"Extracted directory not found: {self.extracted_dir}")
             return month_dirs
 
+        # Initialize file mappings
+        if not hasattr(self, "file_mappings"):
+            self.file_mappings = {}
+
         for month_dir in self.extracted_dir.iterdir():
             if month_dir.is_dir():
                 month = month_dir.name
                 if (month_dir / "Detected_bombs").exists():
                     month_dirs[month] = month_dir
                     logger.info(f"Found extracted month: {month}")
+
+                    # Try to find corresponding CSV file to determine the correct prefix
+                    self._find_csv_mapping_for_month(month)
                 else:
                     logger.warning(f"Month directory {month} missing Detected_bombs subdirectory")
 
         logger.info(f"Found {len(month_dirs)} extracted months")
         return month_dirs
+
+    def _find_csv_mapping_for_month(self, month: str):
+        """Find the correct CSV file for a month by trying different prefixes."""
+        # Try to find a matching CSV file with any prefix
+        csv_files = list(self.annotations_dir.glob(f"*{month}*.csv"))
+
+        if csv_files:
+            # Use the first matching CSV file's base name
+            csv_base = csv_files[0].stem  # Remove .csv extension
+            self.file_mappings[month] = csv_base
+            logger.info(f"Mapped {month} to CSV file: {csv_base}.csv")
+        else:
+            # Try alternative naming pattern (YYYY_MMMdd format)
+            month_parts = month.split("_")
+            if len(month_parts) == 3:
+                alt_month = f"{month_parts[0]}_{month_parts[1]}{month_parts[2]}"
+                alt_csv_files = list(self.annotations_dir.glob(f"*{alt_month}*.csv"))
+                if alt_csv_files:
+                    csv_base = alt_csv_files[0].stem
+                    self.file_mappings[month] = csv_base
+                    logger.info(f"Mapped {month} to CSV file: {csv_base}.csv")
 
     def run_complete_pipeline(self, skip_extraction: bool = False):
         """Run the complete preprocessing pipeline."""
