@@ -1,10 +1,9 @@
+# Bomb Fishing Classifier
 
 
 A machine learning pipeline for detecting explosive fishing activities in underwater audio recordings. This system helps protect marine ecosystems by automatically identifying illegal blast fishing practices.
 
 ## Quick Start
-
-### 🔬 For Researchers & New Data (Recommended)
 ```bash
 # Complete retraining pipeline with your own data
 cd retraining_scripts
