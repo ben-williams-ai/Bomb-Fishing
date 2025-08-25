@@ -11,6 +11,7 @@ import os
 import glob
 from pathlib import Path
 import logging
+from typing import Optional
 from audiomentations import (
     Compose,
     AddGaussianNoise,
@@ -29,10 +30,31 @@ logger = logging.getLogger(__name__)
 
 
 class AudioAugmenter:
-    def __init__(self, data_dir: str = "data"):
+
+    def __init__(
+        self,
+        data_dir: str = "../data",
+        input_dir: Optional[str] = None,
+        output_dir: Optional[str] = None,
+    ):
+        """Initialize AudioAugmenter with configurable I/O directories.
+
+        Args:
+            data_dir: Base data directory (default: "../data")
+            input_dir: Directory containing training audio files (default: data_dir/final_new_dataset/train)
+            output_dir: Output directory for augmented files (default: data_dir/final_new_dataset/train_augmented)
+        """
         self.data_dir = Path(data_dir)
-        self.train_dir = self.data_dir / "final_new_dataset" / "train"
-        self.augmented_dir = self.data_dir / "final_new_dataset" / "train_augmented"
+        self.train_dir = (
+            Path(input_dir)
+            if input_dir
+            else self.data_dir / "final_new_dataset" / "train"
+        )
+        self.augmented_dir = (
+            Path(output_dir)
+            if output_dir
+            else self.data_dir / "final_new_dataset" / "train_augmented"
+        )
 
         # Sample rate
         self.sample_rate = 8000
@@ -216,9 +238,35 @@ class AudioAugmenter:
 
 def main():
     """Run the augmentation pipeline."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Apply data augmentation to balance training dataset",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # I/O directory arguments
+    parser.add_argument(
+        "--data-dir", type=str, default="../data", help="Base data directory"
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=str,
+        help="Directory containing training audio files. Default: data-dir/final_new_dataset/train",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        help="Output directory for augmented files. Default: data-dir/final_new_dataset/train_augmented",
+    )
+
+    args = parser.parse_args()
+
     logger.info("Starting augmentation pipeline...")
 
-    augmenter = AudioAugmenter()
+    augmenter = AudioAugmenter(
+        data_dir=args.data_dir, input_dir=args.input_dir, output_dir=args.output_dir
+    )
     aug_info = augmenter.apply_augmentation()
 
     if aug_info:

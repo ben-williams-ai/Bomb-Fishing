@@ -89,14 +89,23 @@ Bomb-Fishing/
 
 ## 📝 Step-by-Step Pipeline
 
+All scripts now support configurable input/output directories via command-line arguments. See `--help` for each script.
+
 ### Step 1: Data Preprocessing
 
 ```bash
 # UV (Recommended) - automatically manages dependencies
 uv run python data_preprocessing.py
 
+# With custom directories
+uv run python data_preprocessing.py \
+  --data-dir ../data \
+  --input-compressed-dir ../data/compressed_new_data \
+  --input-annotations-dir ../data/annotated_spreadsheets \
+  --output-dir ../data/processed_new_data
+
 # Alternative: If using activated virtual environment
-python data_preprocessing.py
+python data_preprocessing.py --help
 ```
 
 **What it does:**
@@ -130,8 +139,14 @@ python data_preprocessing.py --verify-month 2023_aug_21 --verify-files YB000361_
 # UV (Recommended)
 uv run python apply_augmentation.py
 
+# With custom directories
+uv run python apply_augmentation.py \
+  --data-dir ../data \
+  --input-dir ../data/final_new_dataset/train \
+  --output-dir ../data/final_new_dataset/train_augmented
+
 # Alternative: If using activated virtual environment
-python apply_augmentation.py
+python apply_augmentation.py --help
 ```
 
 **What it does:**
@@ -155,8 +170,14 @@ python apply_augmentation.py
 # UV (Recommended)
 uv run python create_train_test_split.py
 
+# With custom directories
+uv run python create_train_test_split.py \
+  --data-dir ../data \
+  --input-dir ../data/processed_new_data \
+  --output-dir ../data/final_new_dataset
+
 # Alternative: If using activated virtual environment
-python create_train_test_split.py
+python create_train_test_split.py --help
 ```
 
 **What it does:**
@@ -183,8 +204,14 @@ data/final_new_dataset/
 # UV (Recommended)
 uv run python extract_features.py
 
+# With custom directories
+uv run python extract_features.py \
+  --data-dir ../data \
+  --input-dir ../data/final_new_dataset \
+  --output-dir .
+
 # Alternative: If using activated virtual environment
-python extract_features.py
+python extract_features.py --help
 ```
 
 **What it does:**
@@ -204,8 +231,15 @@ python extract_features.py
 # UV (Recommended)
 uv run python train_model.py
 
+# With custom paths
+uv run python train_model.py \
+  --train-pickle train_features_labels_2.pickle \
+  --test-pickle test_features_labels_2.pickle \
+  --models-dir ../models \
+  --logs-dir ../logs
+
 # Alternative: If using activated virtual environment
-python train_model.py
+python train_model.py --help
 ```
 
 **What it does:**
@@ -229,6 +263,36 @@ python train_model.py
 - **Legacy models** (existing `code/model/`): Directory format - use with conda environment
 
 ## 🔧 Configuration Options
+
+### Input/Output Directory Configuration
+
+All scripts now support configurable input and output directories to make them more suitable for research publication:
+
+**Command-line arguments available:**
+
+- `--data-dir`: Base data directory (default: `../data`)
+- `--input-dir` / `--input-compressed-dir` / `--input-annotations-dir`: Input directories
+- `--output-dir` / `--models-dir` / `--logs-dir`: Output directories
+
+**Examples:**
+
+```bash
+# Use custom data directory
+uv run python data_preprocessing.py --data-dir /path/to/my/data
+
+# Specify exact input/output paths  
+uv run python extract_features.py \
+  --input-dir /path/to/dataset \
+  --output-dir /path/to/features
+
+# Pipeline with custom directories
+uv run python run_complete_pipeline.py --data-dir /custom/data/path
+```
+
+**Directory structure flexibility:**
+- Scripts automatically create output directories if they don't exist
+- Relative paths are resolved relative to the script location
+- All paths support both relative and absolute paths
 
 ### Memory Optimization
 

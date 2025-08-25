@@ -9,6 +9,7 @@ import random
 import datetime
 import os
 from pathlib import Path
+from typing import Optional
 
 # GPU configuration for Lightning Studio
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Reduce TensorFlow logging
@@ -108,12 +109,29 @@ class SaturationLogger(keras.callbacks.Callback):
 
 
 class ModelTrainer:
-    def __init__(self, data_dir: str = "."):
+
+    def __init__(
+        self,
+        data_dir: str = ".",
+        train_pickle: Optional[str] = None,
+        test_pickle: Optional[str] = None,
+        models_dir: Optional[str] = None,
+        logs_dir: Optional[str] = None,
+    ):
+        """Initialize ModelTrainer with configurable I/O paths.
+
+        Args:
+            data_dir: Base data directory (default: ".")
+            train_pickle: Path to training features pickle file (default: train_features_labels_2.pickle)
+            test_pickle: Path to test features pickle file (default: test_features_labels_2.pickle)
+            models_dir: Directory to save trained models (default: ../models)
+            logs_dir: Directory to save training logs (default: ../logs)
+        """
         self.data_dir = Path(data_dir)
 
         # Set paths to pickle files
-        self.train_pickle_file = "combined_train_features_labels.pickle"
-        self.test_pickle_file = "combined_test_features_labels.pickle"
+        self.train_pickle_file = train_pickle or "train_features_labels_2.pickle"
+        self.test_pickle_file = test_pickle or "test_features_labels_2.pickle"
 
         # Training parameters (optimized for GPU)
         self.EPOCHS = 100
@@ -141,8 +159,8 @@ class ModelTrainer:
         ]
 
         # Create output dirs
-        self.model_dir = Path("models_160825")
-        self.logs_dir = Path("logs")
+        self.model_dir = Path(models_dir) if models_dir else Path("../models")
+        self.logs_dir = Path(logs_dir) if logs_dir else Path("../logs")
         self.model_dir.mkdir(exist_ok=True)
         self.logs_dir.mkdir(exist_ok=True)
 
@@ -1147,7 +1165,49 @@ class ModelTrainer:
 
 def main():
     """Run the model training pipeline."""
-    trainer = ModelTrainer()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Train bomb detection model using AutoKeras",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # I/O arguments
+    parser.add_argument("--data-dir", type=str, default=".", help="Base data directory")
+    parser.add_argument(
+        "--train-pickle",
+        type=str,
+        default="train_features_labels_2.pickle",
+        help="Path to training features pickle file",
+    )
+    parser.add_argument(
+        "--test-pickle",
+        type=str,
+        default="test_features_labels_2.pickle",
+        help="Path to test features pickle file",
+    )
+    parser.add_argument(
+        "--models-dir",
+        type=str,
+        default="../models",
+        help="Directory to save trained models",
+    )
+    parser.add_argument(
+        "--logs-dir",
+        type=str,
+        default="../logs",
+        help="Directory to save training logs",
+    )
+
+    args = parser.parse_args()
+
+    trainer = ModelTrainer(
+        data_dir=args.data_dir,
+        train_pickle=args.train_pickle,
+        test_pickle=args.test_pickle,
+        models_dir=args.models_dir,
+        logs_dir=args.logs_dir,
+    )
     trainer.run_training_pipeline()
 
 

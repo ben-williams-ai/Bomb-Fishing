@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Feature extraction for bomb detection model
-Extracts MFCC features from augmented training data and test data
-Based on the notebook code provided by the user
+Extracts MFCC features from audio data
+Supports configurable input/output directories
 """
 
 import datetime
@@ -11,6 +11,7 @@ import random
 import os
 import pickle
 from pathlib import Path
+from typing import Optional
 
 # Progress tracker for feature extraction
 from tqdm import tqdm
@@ -29,12 +30,28 @@ colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 
 class FeatureExtractor:
-    def __init__(self, data_dir: str = "data"):
+
+    def __init__(
+        self,
+        data_dir: str = "../data",
+        input_dir: Optional[str] = None,
+        output_dir: Optional[str] = None,
+    ):
+        """Initialize FeatureExtractor with configurable I/O directories.
+
+        Args:
+            data_dir: Base data directory (default: "../data")
+            input_dir: Directory containing train/test split data (default: data_dir/final_new_dataset)
+            output_dir: Output directory for feature files (default: current directory)
+        """
         self.data_dir = Path(data_dir)
-        self.final_dataset_dir = self.data_dir / "final_new_dataset"
+        self.final_dataset_dir = (
+            Path(input_dir) if input_dir else self.data_dir / "final_new_dataset"
+        )
+        self.output_dir = Path(output_dir) if output_dir else Path(".")
 
         # Directory paths
-        self.train_augmented_dir = self.final_dataset_dir / "train_augmented"
+        self.train_dir = self.final_dataset_dir / "train"
         self.test_dir = self.final_dataset_dir / "test"
 
         # Sample rate (matching the processed audio files)
@@ -46,14 +63,10 @@ class FeatureExtractor:
         random.seed(self.seed)
 
         # Output pickle files
-        self.train_pickle_file = "/Users/sonnyburniston/Bomb-Fishing/data/new_data_train_features_labels.pickle"
-        self.test_pickle_file = "/Users/sonnyburniston/Bomb-Fishing/data/new_data_test_features_labels.pickle"
+        self.train_pickle_file = self.output_dir / "train_features_labels_2.pickle"
+        self.test_pickle_file = self.output_dir / "test_features_labels_2.pickle"
 
-        # Verify directories exist
-        if not self.train_augmented_dir.exists():
-            raise FileNotFoundError(
-                f"Augmented training directory not found: {self.train_augmented_dir}"
-            )
+        # Verify test directory exists
         if not self.test_dir.exists():
             raise FileNotFoundError(f"Test directory not found: {self.test_dir}")
 
@@ -118,7 +131,7 @@ class FeatureExtractor:
         for file in tqdm(dataset, desc="Extracting features"):
             # Load audio
             audio_path = audio_dir / file
-            audio, sr = librosa.load(path=audio_path, sr=self.sample_rate)
+            audio, _ = librosa.load(path=audio_path, sr=self.sample_rate)
 
             # Calculate MFCC
             mfcc = librosa.feature.mfcc(y=audio, sr=self.sample_rate, n_mfcc=32)
@@ -181,47 +194,9 @@ class FeatureExtractor:
 
         plt.show()
 
-    def extract_train_features(self):
-        """Extract features from augmented training data."""
-        print("=== EXTRACTING TRAINING FEATURES ===")
-
-        # Make list of all audio files in the directory
-        train_files = [
-            f
-            for f in os.listdir(self.train_augmented_dir)
-            if f.endswith(".wav") or f.endswith(".WAV")
-        ]
-        train_file_count = len(train_files)
-        print(f"Found {train_file_count} training files")
-
-        # Shuffle list of files so files from same sites get shuffled around
-        random.shuffle(train_files)
-
-        # Extract features and labels, plus save input shape for network
-        train_features, train_labels, input_shape = self.extract_features_labels(
-            train_files, self.train_augmented_dir
-        )
-
-        # Print statistics
-        print(f"\nInput shape for network: {input_shape}")
-        bomb_indices = np.where(train_labels == 1)[0]
-        non_bomb_indices = np.where(train_labels == 0)[0]
-        print(f"Bomb files: {len(bomb_indices)}")
-        print(f"Non-bomb files: {len(non_bomb_indices)}")
-        print(f"Bomb file indices: {bomb_indices[:10]}...")  # Show first 10
-
-        # Save to pickle file
-        pickle_file_path = Path(self.train_pickle_file)
-        with open(pickle_file_path, "wb") as f:
-            pickle.dump((train_features, train_labels, input_shape), f)
-
-        print(f"Training features saved to: {pickle_file_path}")
-
-        return train_features, train_labels, input_shape
-
     def extract_test_features(self):
         """Extract features from test data."""
-        print("\n=== EXTRACTING TEST FEATURES ===")
+        print("=== EXTRACTING TEST FEATURES ===")
 
         # List all audio files in the directory
         test_files = [
@@ -269,11 +244,11 @@ class FeatureExtractor:
 
         return features, labels, input_shape
 
-    def create_metadata(self, train_features, train_labels, test_features, test_labels):
-        """Create metadata file documenting the feature extraction."""
-        metadata_file = Path("feature_extraction_metadata.txt")
+    def create_metadata(self, test_features, test_labels):
+        """Create metadata file documenting the feature extraction process."""
+        metadata_file = self.output_dir / "feature_extraction_metadata.txt"
 
-        with open(metadata_file, "w") as f:
+        with open(metadata_file, "w", encoding="utf-8") as f:
             f.write("FEATURE EXTRACTION METADATA\n")
             f.write("=" * 50 + "\n\n")
             f.write(
@@ -285,20 +260,13 @@ class FeatureExtractor:
             f.write("  MFCC features: 32\n")
             f.write(f"  Random seed: {self.seed}\n\n")
 
-            f.write("TRAINING DATA (AUGMENTED):\n")
-            f.write(f"  Total files: {len(train_features)}\n")
-            f.write(f"  Bomb files: {np.sum(train_labels)}\n")
-            f.write(f"  Non-bomb files: {len(train_labels) - np.sum(train_labels)}\n")
-            f.write(f"  Feature shape: {train_features.shape}\n\n")
-
-            f.write("TEST DATA:\n")
+            f.write("DATASET INFORMATION:\n")
             f.write(f"  Total files: {len(test_features)}\n")
             f.write(f"  Bomb files: {np.sum(test_labels)}\n")
             f.write(f"  Non-bomb files: {len(test_labels) - np.sum(test_labels)}\n")
             f.write(f"  Feature shape: {test_features.shape}\n\n")
 
             f.write("OUTPUT FILES:\n")
-            f.write(f"  Training features: {self.train_pickle_file}\n")
             f.write(f"  Test features: {self.test_pickle_file}\n\n")
 
             f.write("NOTES:\n")
@@ -306,26 +274,111 @@ class FeatureExtractor:
                 "  - Features are MFCC spectrograms with shape (32, time_steps, 1)\n"
             )
             f.write("  - Labels: 0 = non-bomb (NB), 1 = bomb (YB)\n")
-            f.write("  - Training data includes augmented samples\n")
+            f.write("  - Configurable input/output directories via command line\n")
+            f.write(f"  - Source: {self.final_dataset_dir}\n")
 
         print(f"Metadata saved to: {metadata_file}")
 
+    def extract_train_test_features(self):
+        """Extract features from both training and test data."""
+        print("=== EXTRACTING TRAINING AND TEST FEATURES ===")
+
+        # Check if both train and test directories exist
+        has_train_data = self.train_dir.exists() and any(self.train_dir.glob("*.wav"))
+        has_test_data = self.test_dir.exists() and any(self.test_dir.glob("*.wav"))
+
+        train_features, train_labels, input_shape = None, None, None
+        test_features, test_labels = None, None
+
+        if has_train_data:
+            print(f"Extracting training features from: {self.train_dir}")
+            train_files = [
+                f
+                for f in os.listdir(self.train_dir)
+                if f.endswith(".wav") or f.endswith(".WAV")
+            ]
+            train_file_count = len(train_files)
+            print(f"Found {train_file_count} training files")
+
+            # Sort files (NB files first, then YB files)
+            sorted_train_files = sorted(train_files, key=self.custom_sort_key)
+
+            # Extract features and labels
+            train_features, train_labels, input_shape = self.extract_features_labels(
+                sorted_train_files, self.train_dir
+            )
+
+            print(f"Training features: {train_features.shape}")
+            bomb_indices = np.where(train_labels == 1)[0]
+            non_bomb_indices = np.where(train_labels == 0)[0]
+            print(
+                f"Training - Bomb files: {len(bomb_indices)}, Non-bomb files: {len(non_bomb_indices)}"
+            )
+
+            # Save training features
+            with open(self.train_pickle_file, "wb") as f:
+                pickle.dump((train_features, train_labels, input_shape), f)
+            print(f"Training features saved to: {self.train_pickle_file}")
+
+        if has_test_data:
+            print(f"Extracting test features from: {self.test_dir}")
+            test_files = [
+                f
+                for f in os.listdir(self.test_dir)
+                if f.endswith(".wav") or f.endswith(".WAV")
+            ]
+            test_file_count = len(test_files)
+            print(f"Found {test_file_count} test files")
+
+            # Sort files (NB files first, then YB files)
+            sorted_test_files = sorted(test_files, key=self.custom_sort_key)
+
+            # Extract features and labels
+            test_features, test_labels, test_input_shape = self.extract_features_labels(
+                sorted_test_files, self.test_dir
+            )
+
+            # Use input shape from training data if available, otherwise use test data shape
+            if input_shape is None:
+                input_shape = test_input_shape
+
+            print(f"Test features: {test_features.shape}")
+            bomb_indices = np.where(test_labels == 1)[0]
+            non_bomb_indices = np.where(test_labels == 0)[0]
+            print(
+                f"Test - Bomb files: {len(bomb_indices)}, Non-bomb files: {len(non_bomb_indices)}"
+            )
+
+            # Save test features
+            with open(self.test_pickle_file, "wb") as f:
+                pickle.dump((test_features, test_labels, input_shape), f)
+            print(f"Test features saved to: {self.test_pickle_file}")
+
+        if not has_train_data and not has_test_data:
+            raise FileNotFoundError(
+                f"No audio files found in {self.train_dir} or {self.test_dir}"
+            )
+
+        return train_features, train_labels, test_features, test_labels, input_shape
+
     def run_feature_extraction(self):
-        """Run the complete feature extraction pipeline."""
+        """Run the feature extraction pipeline."""
         print("Starting feature extraction pipeline...")
 
-        # Extract training features
-        train_features, train_labels, input_shape = self.extract_train_features()
+        # Extract features from both train and test data
+        train_features, train_labels, test_features, test_labels, input_shape = (
+            self.extract_train_test_features()
+        )
 
-        # Extract test features
-        test_features, test_labels, input_shape = self.extract_test_features()
-
-        # Create metadata
-        self.create_metadata(train_features, train_labels, test_features, test_labels)
+        # Create metadata for test features
+        if test_features is not None:
+            self.create_metadata(test_features, test_labels)
 
         print("\n=== FEATURE EXTRACTION COMPLETE ===")
-        print(f"Training features: {train_features.shape}")
-        print(f"Test features: {test_features.shape}")
+        if train_features is not None:
+            print(f"Training features: {train_features.shape}")
+        if test_features is not None:
+            print(f"Test features: {test_features.shape}")
         print(f"Input shape for network: {input_shape}")
 
         return train_features, train_labels, test_features, test_labels, input_shape
@@ -333,7 +386,34 @@ class FeatureExtractor:
 
 def main():
     """Run the feature extraction pipeline."""
-    extractor = FeatureExtractor()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Extract MFCC features from audio data for training",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # I/O directory arguments
+    parser.add_argument(
+        "--data-dir", type=str, default="../data", help="Base data directory"
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=str,
+        help="Directory containing train/test split data. Default: data-dir/final_new_dataset",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=".",
+        help="Output directory for feature pickle files",
+    )
+
+    args = parser.parse_args()
+
+    extractor = FeatureExtractor(
+        data_dir=args.data_dir, input_dir=args.input_dir, output_dir=args.output_dir
+    )
     extractor.run_feature_extraction()
 
 

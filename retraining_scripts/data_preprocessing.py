@@ -24,10 +24,44 @@ logger = logging.getLogger(__name__)
 class DataPreprocessor:
     """Handles the complete data preprocessing pipeline for bomb detection retraining."""
 
-    def __init__(self, data_dir: str = "data"):
+    def __init__(
+        self,
+        data_dir: str = "../data",
+        input_compressed_dir: Optional[str] = None,
+        input_annotations_dir: Optional[str] = None,
+        output_dir: Optional[str] = None,
+        extracted_dir: Optional[str] = None,
+    ):
+        """Initialize DataPreprocessor with configurable I/O directories.
+
+        Args:
+            data_dir: Base data directory (default: "../data")
+            input_compressed_dir: Directory containing .tar.gz/.7z files (default: data_dir/compressed_new_data)
+            input_annotations_dir: Directory containing .csv annotation files (default: data_dir/annotated_spreadsheets)
+            output_dir: Output directory for processed files (default: data_dir/processed_new_data)
+            extracted_dir: Directory containing already extracted files (default: data_dir/extracted)
+        """
         self.data_dir = Path(data_dir)
-        self.extracted_dir = self.data_dir / "extracted"
-        self.processed_dir = self.data_dir / "processed_new_data"
+
+        # Configure input directories
+        self.compressed_dir = (
+            Path(input_compressed_dir)
+            if input_compressed_dir
+            else self.data_dir / "compressed_new_data"
+        )
+        self.annotations_dir = (
+            Path(input_annotations_dir)
+            if input_annotations_dir
+            else self.data_dir / "annotated_spreadsheets"
+        )
+
+        # Configure output directories
+        self.extracted_dir = (
+            Path(extracted_dir) if extracted_dir else self.data_dir / "extracted"
+        )
+        self.processed_dir = (
+            Path(output_dir) if output_dir else self.data_dir / "processed_new_data"
+        )
         self.final_dir = self.data_dir / "final_new_dataset"
 
         # Audio specifications
@@ -71,9 +105,11 @@ class DataPreprocessor:
         """Extract all compressed detection files and return mapping of month to directory."""
         logger.info("Step 1: Extracting all compressed detection files...")
 
-        compressed_files = list((self.data_dir / "compressed_new_data").glob("*.7z")) + \
-                           list((self.data_dir / "compressed_new_data").glob("*.zip"))
-
+        compressed_files = (
+            list(self.compressed_dir.glob("*.tar.gz"))
+            + list(self.compressed_dir.glob("*.7z"))
+            + list(self.compressed_dir.glob("*.zip"))
+        )
         month_dirs = {}
 
         for compressed_file in compressed_files:
@@ -126,7 +162,7 @@ class DataPreprocessor:
         else:
             csv_month = month
 
-        csv_file = self.data_dir / "annotated_spreadsheets" / f"south_{csv_month}.csv"
+        csv_file = self.annotations_dir / f"south_{csv_month}.csv"
 
         if not csv_file.exists():
             logger.warning(
@@ -468,12 +504,37 @@ class DataPreprocessor:
             "Final dataset structure will be created by train/test split script"
         )
 
-    def run_complete_pipeline(self):
-        """Run the complete preprocessing pipeline."""
-        logger.info("Starting Phase 2: Data Extraction and Preprocessing")
+    def get_existing_extracted_dirs(self) -> Dict[str, Path]:
+        """Get mapping of already extracted month directories."""
+        logger.info("Looking for existing extracted directories...")
 
-        # Step 1: Extract all compressed files
-        month_dirs = self.extract_all_compressed_files()
+        month_dirs = {}
+        if not self.extracted_dir.exists():
+            logger.error(f"Extracted directory not found: {self.extracted_dir}")
+            return month_dirs
+
+        for month_dir in self.extracted_dir.iterdir():
+            if month_dir.is_dir():
+                month = month_dir.name
+                if (month_dir / "Detected_bombs").exists():
+                    month_dirs[month] = month_dir
+                    logger.info(f"Found extracted month: {month}")
+                else:
+                    logger.warning(f"Month directory {month} missing Detected_bombs subdirectory")
+
+        logger.info(f"Found {len(month_dirs)} extracted months")
+        return month_dirs
+
+    def run_complete_pipeline(self, skip_extraction: bool = False):
+        """Run the complete preprocessing pipeline."""
+        logger.info("Starting Data Extraction and Preprocessing")
+
+        if skip_extraction:
+            # Use already extracted files
+            month_dirs = self.get_existing_extracted_dirs()
+        else:
+            # Step 1: Extract all compressed files
+            month_dirs = self.extract_all_compressed_files()
 
         # Step 2-4: Process each month
         total_yb = 0
@@ -492,7 +553,7 @@ class DataPreprocessor:
         # Create final dataset
         self.create_final_dataset()
 
-        logger.info("Phase 2 preprocessing complete!")
+        logger.info("Preprocessing complete!")
 
     # ----------------------
     # Debug/verification API
@@ -663,8 +724,41 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Phase 2 data preprocessing and verification"
+        description="Data preprocessing and verification",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
+
+    # I/O directory arguments
+    parser.add_argument(
+        "--data-dir", type=str, default="../data", help="Base data directory"
+    )
+    parser.add_argument(
+        "--input-compressed-dir",
+        type=str,
+        help="Directory containing compressed data files (.tar.gz/.7z files). Default: data-dir/compressed_new_data",
+    )
+    parser.add_argument(
+        "--input-annotations-dir",
+        type=str,
+        help="Directory containing CSV annotation files. Default: data-dir/annotated_spreadsheets",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        help="Output directory for processed files. Default: data-dir/processed_new_data",
+    )
+    parser.add_argument(
+        "--extracted-dir",
+        type=str,
+        help="Directory containing already extracted files. Default: data-dir/extracted",
+    )
+    parser.add_argument(
+        "--skip-extraction",
+        action="store_true",
+        help="Skip extraction step and use already extracted files",
+    )
+
+    # Verification arguments
     parser.add_argument(
         "--verify-month",
         type=str,
@@ -685,7 +779,13 @@ def main():
 
     args = parser.parse_args()
 
-    preprocessor = DataPreprocessor()
+    preprocessor = DataPreprocessor(
+        data_dir=args.data_dir,
+        input_compressed_dir=args.input_compressed_dir,
+        input_annotations_dir=args.input_annotations_dir,
+        output_dir=args.output_dir,
+        extracted_dir=args.extracted_dir,
+    )
 
     if args.verify_month and args.verify_files:
         results = preprocessor.verify_files_against_annotations(
@@ -707,7 +807,7 @@ def main():
                 )
             )
     else:
-        preprocessor.run_complete_pipeline()
+        preprocessor.run_complete_pipeline(skip_extraction=args.skip_extraction)
 
 
 if __name__ == "__main__":
