@@ -20,7 +20,7 @@ The `model_training` Nntebooks were followed:
 6. `inference`: A short test notebook for inferencing on larger datasets for sanity checks. Now replaced by `model_deployment`.
 
 ## Deployment:
-Deployment was performed using the legacy model and the `model_deployment` scripts. Each month raw HydroMoth files were put ina  directory and the model was used to inference on this, outputting detections to a new directory. See the study for more detail. This process was run using `parent_script.py`, where model, data and outputs paths at the top of this script must be modified.
+Deployment was performed using the legacy model and the `model_deployment` scripts. Each month raw HydroMoth files were put into a  directory and the model was used to inference on this, outputting detections to a new directory. See the study and supplementary for more details on how this works. This process was run using `parent_script.py`, where model, data and output paths at the top of this script must be modified.
 
 # Misc
 Contains miscellaneous scripts used for the manuscript, such as plots and the acoustic localisation analysis.
