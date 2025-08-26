@@ -1,15 +1,14 @@
 # Bomb-Fishing
-Original scripts used to train and deploy the legacy model in Williams et al., (2025).
-
+Original scripts used to train and deploy the legacy model in Williams et al., (2025). 
 
 ## Set up
-
-Install conda and set up the environment:
+The deployment scripts can be run locally. Install conda and set up the environment:
 ```bash
 cd archive
 conda env create -f bomb-detector-env.yml
 conda activate conda-bomb-env
 ```
+Training was mostly performed on Google colab in early 2023. Given colabs environment changes overtime, these may no longer work natively on colab.
 
 ## Training
 The `model_training` Nntebooks were followed:
