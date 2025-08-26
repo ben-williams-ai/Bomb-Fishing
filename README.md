@@ -5,7 +5,7 @@ A machine learning pipeline for detecting explosive fishing activities in underw
 
 The code in this repository was used to support the forthcoming publication: Widespread bomb fishing in Indo-pacific archipelago revealed through machine learning accelerated passive acoustic monitoring, Williams et al., (2025). See the study (link pending publication) for further details.
 
-The original code to develop and deploy the model can be found in`archive`. As part of the ongoing development of this work, much of this code is being refactored and the model improved to support others in using this approach.
+The original code to develop and deploy the model can be found in `archive`. As part of the ongoing development of this work, much of this code is being refactored and the model improved to support others in using this approach.
 
 
 ## Quick Start
