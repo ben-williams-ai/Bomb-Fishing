@@ -1,7 +1,12 @@
 # Bomb Fishing Classifier
 
 
-A machine learning pipeline for detecting explosive fishing activities in underwater audio recordings. This system helps protect marine ecosystems by automatically identifying illegal blast fishing practices.
+A machine learning pipeline for detecting explosive fishing activities in underwater audio recordings. This system helps protect marine ecosystems by automatically identifying illegal blast fishing practices. 
+
+The code in this repository was used to support the forthcoming publication: Widespread bomb fishing in Indo-pacific archipelago revealed through machine learning accelerated passive acoustic monitoring, Williams et al., (2025). See the study (link pending publication) for further details.
+
+The original code to develop and deploy the model can be found in`archive`. As part of the ongoing development of this work, much of this code is being refactored and the model improved to support others in using this approach.
+
 
 ## Quick Start
 
@@ -12,8 +17,8 @@ Complete pipeline to retrain models with your own data:
 - **Quick Start**: [retraining_scripts/QUICK_START.md](retraining_scripts/QUICK_START.md) 
 - **Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
 
-### **🎯 For Inference Only**
-Using pre-trained models to detect bomb fishing:
+### **🎯 For deployment**
+Use our pre-trained models to detect bomb fishing events within raw HydroMoth audio (sampled at 8 kHz). Place the model and your raw data in suitable folders, then run the following:
 
 #### Modern .keras Models (Recommended)
 ```bash
@@ -37,6 +42,7 @@ python parent_script.py --model-path ../code/model --input-dir /path/to/audio/fi
 
 ```
 Bomb-Fishing/
+├── retraining_scripts/       # Code used in the original study
 ├── retraining_scripts/       # Retraining pipeline
 │   ├── README.md             # Complete retraining documentation
 │   ├── QUICK_START.md        # 5-minute setup guide
