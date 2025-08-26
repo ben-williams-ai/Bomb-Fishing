@@ -3,21 +3,23 @@
 ## 5-Minute Setup
 
 ```bash
-# 1. Environment setup with UV (Recommended - Zero Config!)
-# UV automatically manages dependencies from pyproject.toml
-uv run python --version  # Test that UV works
-
-# 2. Prepare data structure
-mkdir -p data/{compressed_new_data,annotated_spreadsheets}
-# Place your .tar.gz files in data/compressed_new_data/
+# 1. Prepare data structure
+mkdir -p data/compressed_new_data data/annotated_spreadsheets
+# Place your .zip files in data/compressed_new_data/
 # Place your .csv files in data/annotated_spreadsheets/
+# IMPORTANT: Ensure matching names (e.g., north_2024_feb_22.zip ↔ north_2024_feb_22.csv)
+
+# 2. Environment setup with UV (Recommended - Zero Config!)
+# UV automatically manages dependencies from pyproject.toml
+# macOS users: Update pyproject.toml dependencies first (see below)
+uv run python --version  # Test that UV works
 
 # 3. Run complete pipeline (UV automatically installs dependencies)
 cd retraining_scripts
 uv run python run_complete_pipeline.py
 
 # OR run step by step:
-uv run python data_preprocessing.py && uv run python apply_augmentation.py && uv run python create_train_test_split.py && uv run python extract_features.py && uv run python train_model.py
+uv run python data_preprocessing.py && uv run python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22 && uv run python apply_augmentation.py && uv run python extract_features.py && uv run python train_model.py
 ```
 
 ## Why UV?
@@ -27,29 +29,42 @@ uv run python data_preprocessing.py && uv run python apply_augmentation.py && uv
 - **Fast**: Much faster dependency resolution than pip/conda
 - **Reliable**: Consistent environments across machines
 
+## macOS Users - Important Setup
+
+Update `pyproject.toml` dependencies before running:
+```toml
+"tensorflow-macos>=2.16.0",
+"tensorflow-metal>=0.8.0",
+```
+
 ## Required Files
 
 **Before starting, ensure you have:**
 
 ```
-data/compressed_new_data/
-├── 2023_aug_21.tar.gz
-├── 2023_nov_23.tar.gz
-└── [other month files]
+data/compressed_new_data/          # Create this directory first
+├── north_2024_feb_22.zip         # Example ZIP files
+├── north_2023_jun_28.zip
+└── [other month files.zip]
 
-data/annotated_spreadsheets/
-├── south_2023_aug21.csv
-├── south_2023_nov23.csv
-└── [other annotation files]
+data/annotated_spreadsheets/       # Create this directory first  
+├── north_2024_feb_22.csv         # MUST match ZIP names exactly
+├── north_2023_jun_28.csv
+└── [other annotation files.csv]
 ```
+
+**Naming Requirements:**
+- CSV and ZIP files must have **identical base names**
+- Format: `[region]_[YYYY]_[MMM]_[DD]` or `[region]_[YYYY]_[MMM][DD]`
+- Examples: `north_2024_feb_22` or `south_2023_jun28`
 
 ## Expected Timeline
 
 | Step | Script | Time | Output |
 |------|--------|------|--------|
 | 1 | `data_preprocessing.py` | 10-30 min | Processed audio files |
-| 2 | `apply_augmentation.py` | 20-60 min | Augmented dataset |
-| 3 | `create_train_test_split.py` | 2-5 min | Train/test split |
+| 2 | `create_train_test_split.py` | 2-5 min | Train/test split |
+| 3 | `apply_augmentation.py` | 20-60 min | Augmented dataset |
 | 4 | `extract_features.py` | 5-15 min | Feature pickle files |
 | 5 | `train_model.py` | 1-3 hours | Trained model |
 
@@ -60,8 +75,8 @@ data/annotated_spreadsheets/
 After each step, you should see:
 
 1. **Data preprocessing**: Files in `data/processed_new_data/[month]/`
-2. **Augmentation**: 10x more YB files, 2x more NB files
-3. **Train/test split**: Files in `data/final_new_dataset/train/` and `test/`
+2. **Train/test split**: Files in `data/final_new_dataset/train/` and `test/`
+3. **Augmentation**: 10x more YB files, 2x more NB files
 4. **Feature extraction**: `train_features_labels_2.pickle` and `test_features_labels_2.pickle`
 5. **Training**: `models/retrained_best_model.keras` with >85% accuracy
 

@@ -5,15 +5,18 @@ This directory contains all the scripts needed to retrain the bomb detection mod
 ## Quick Start
 
 ```bash
-# 1. Set up environment (UV - Recommended)
+# 1. Create required directories
+mkdir -p data/compressed_new_data data/annotated_spreadsheets
+
+# 2. Set up environment (UV - Recommended)
 cd /path/to/Bomb-Fishing
 # UV automatically manages the environment - no activation needed!
 
-# 2. Run complete pipeline
+# 3. Run complete pipeline
 cd retraining_scripts
 uv run python data_preprocessing.py
+uv run python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22
 uv run python apply_augmentation.py  
-uv run python create_train_test_split.py
 uv run python extract_features.py
 uv run python train_model.py
 
@@ -35,6 +38,11 @@ uv run python --version  # Test that UV is working
 
 # All dependencies are automatically installed from pyproject.toml
 # when you run scripts with 'uv run'
+
+# macOS Users: Update pyproject.toml first:
+# Change tensorflow dependencies to:
+# "tensorflow-macos>=2.16.0",
+# "tensorflow-metal>=0.8.0",
 ```
 
 #### Option 2: UV with Manual Environment
@@ -84,8 +92,13 @@ Bomb-Fishing/
 ```
 
 **Required input data:**
+- **Create directories first**: `mkdir -p data/compressed_new_data data/annotated_spreadsheets`
 - Place your compressed data files (`.zip`) in `data/compressed_new_data/`
 - Place corresponding CSV annotation files in `data/annotated_spreadsheets/`
+- **Important**: CSV and ZIP files must have identical names
+  - ✅ `north_2024_feb_22.zip` ↔ `north_2024_feb_22.csv`
+  - ✅ `south_2023_jun_28.zip` ↔ `south_2023_jun_28.csv`
+  - **Format**: `[region]_[YYYY]_[MMM]_[DD]` or `[region]_[YYYY]_[MMM][DD]`
 
 ## Step-by-Step Pipeline
 
@@ -133,10 +146,12 @@ data/processed_new_data/
 python data_preprocessing.py --verify-month 2023_aug_21 --verify-files YB000361_M01_20230803_090800_det8.0s_ann8.6s.wav
 ```
 
-### Step 2: Data Augmentation
+### Step 3: Data Augmentation
+
+**Note**: Run this AFTER train/test split to augment only training data.
 
 ```bash
-# UV (Recommended)
+# UV (Recommended) - Run after train/test split
 uv run python apply_augmentation.py
 
 # With custom directories
@@ -164,17 +179,19 @@ python apply_augmentation.py --help
 - Parametric EQ
 - Clipping distortion
 
-### Step 3: Train/Test Split
+### Step 2: Train/Test Split
 
 ```bash
-# UV (Recommended)
-uv run python create_train_test_split.py
+# UV (Recommended) - REQUIRES month specification
+uv run python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22
 
-# With custom directories
+# With custom directories and months
 uv run python create_train_test_split.py \
   --data-dir ../data \
   --input-dir ../data/processed_new_data \
-  --output-dir ../data/final_new_dataset
+  --output-dir ../data/final_new_dataset \
+  --train-months 2023_jun_28 2023_nov_23 \
+  --test-months 2024_feb_22
 
 # Alternative: If using activated virtual environment
 python create_train_test_split.py --help
@@ -182,9 +199,8 @@ python create_train_test_split.py --help
 
 **What it does:**
 - Splits data by month to avoid data leakage
-- **Test months**: 2023_aug_21, 2023_nov_23, 2024_march_12
-- **Training months**: All others
-- Combines with original training data for expanded dataset
+- **Requires**: `--train-months` and `--test-months` parameters
+- **Example months**: 2023_jun_28, 2023_nov_23, 2024_feb_22
 - Creates final directory structure for training
 
 **Output structure:**

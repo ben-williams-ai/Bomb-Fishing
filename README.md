@@ -103,10 +103,26 @@ conda activate conda-bomb-env
 
 ## Getting Started Checklist
 
-
-- [ ] **Install UV**: `curl -LsSf https://astral.sh/uv/install.sh | sh`  
-- [ ] **Prepare Data**: Place `.tar.gz` files in `data/compressed_new_data/`
+### Data Setup
+- [ ] **Create Data Directories**: 
+  ```bash
+  mkdir -p data/compressed_new_data data/annotated_spreadsheets
+  ```
+- [ ] **Prepare Data**: Place `.zip` files in `data/compressed_new_data/`
 - [ ] **Add Annotations**: Place `.csv` files in `data/annotated_spreadsheets/`
+- [ ] **Ensure Matching Names**: CSV and ZIP files must have identical names
+  - Example: `north_2024_feb_22.zip` ↔ `north_2024_feb_22.csv`
+  - Format: `[region]_[YYYY]_[MMM]_[DD]` or `[region]_[YYYY]_[MMM][DD]`
+
+### Environment Setup  
+- [ ] **Install UV**: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- [ ] **macOS Users**: Update `pyproject.toml` dependencies:
+  ```toml
+  "tensorflow-macos>=2.16.0",
+  "tensorflow-metal>=0.8.0",
+  ```
+
+### Pipeline Execution
 - [ ] **Run Pipeline**: `cd retraining_scripts && uv run python run_complete_pipeline.py`
 - [ ] **Evaluate Results**: Check `models/` for trained `.keras` files
 
