@@ -4,17 +4,16 @@
 A machine learning pipeline for detecting explosive fishing activities in underwater audio recordings. This system helps protect marine ecosystems by automatically identifying illegal blast fishing practices.
 
 ## Quick Start
-```bash
-# Complete retraining pipeline with your own data
-cd retraining_scripts
-uv run python run_complete_pipeline.py
 
-# With custom data directory
-uv run python run_complete_pipeline.py --data-dir /path/to/your/data
-```
-**Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
+This system provides two main capabilities:
 
-### For Inference Only (Using Pre-trained Models)
+### **🔬 For Researchers & Retraining**
+Complete pipeline to retrain models with your own data:
+- **Quick Start**: [retraining_scripts/QUICK_START.md](retraining_scripts/QUICK_START.md) 
+- **Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
+
+### **🎯 For Inference Only**
+Using pre-trained models to detect bomb fishing:
 
 #### Modern .keras Models (Recommended)
 ```bash
