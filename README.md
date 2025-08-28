@@ -41,7 +41,7 @@ python inference_parent.py
 uv run python inference_parent.py
 ```
 
-**Legacy Scripts**: The older `legacy_parent_script.py` has been archived. Use `inference_parent.py` for better features and compatibility.
+**Legacy Scripts**: The older legacy `parent_script.py` and `child_script.py` have been archived. Use `inference_parent.py` for better features and compatibility.
 
 ### Output
 
