@@ -1,135 +1,196 @@
 # Bomb Fishing Classifier
 
-
 A machine learning pipeline for detecting explosive fishing activities in underwater audio recordings. This system helps protect marine ecosystems by automatically identifying illegal blast fishing practices. 
 
-The code in this repository was used to support the forthcoming publication: Widespread bomb fishing in Indo-pacific archipelago revealed through machine learning accelerated passive acoustic monitoring, Williams et al., (2025). See the study (link pending publication) for further details.
+The code in this repository was used to support the forthcoming publication: Widespread bomb fishing in Indo-pacific archipelago revealed through machine learning accelerated passive acoustic monitoring, Williams et al., (2025). See the study for further details.
 
 The original code to develop and deploy the model can be found in `archive`. As part of the ongoing development of this work, much of this code is being refactored and the model improved to support others in using this approach.
 
+**Important Note**: Do not expect our model to generalise well to new locations without retraining it. Please consider retraining the model on your own data. Our code in development in the `retraining_scripts` directory may help with this.
 
-## Quick Start
+## Inference (Production Ready)
 
-This system provides two main capabilities:
+Use our pre-trained legacy model to detect bomb fishing events in raw HydroMoth audio recordings (sampled at 8 kHz).
 
-### **🔬 For Researchers & Retraining**
-Complete pipeline to retrain models with your own data:
+### Quick Start for Inference
+
+1. **Set up environment** (see [Environment Setup](#environment-setup))
+2. **Prepare your data**: Place WAV files in a directory
+3. **Run inference**: Use the legacy scripts with the pre-trained model
+
+### Running Inference 
+
+**Modern Inference (Recommended)**: Use the enhanced inference scripts that support both legacy and modern models:
+
+```bash
+# Navigate to inference directory
+cd inference
+
+# Edit inference_parent.py to set your paths:
+# - new_audio_dir: path to your WAV files  
+# - output_folder: where results should be saved
+# - model_dir: path to ../models/legacy_model (or your .keras file)
+# - decision_threshold: tune detection sensitivity
+
+# For legacy model (requires conda)
+conda env create -f ../archive/set_up/linux_env.yml
+conda activate conda-bomb-env
+python inference_parent.py
+
+# For modern .keras models (requires UV)
+uv run python inference_parent.py
+```
+
+**Legacy Scripts**: The older `legacy_parent_script.py` has been archived. Use `inference_parent.py` for better features and compatibility.
+
+### Output
+
+The inference will generate enhanced CSV files with detected bomb fishing events, including:
+- **File names** where events were detected
+- **Timestamps** (HH:MM:SS) of detected events  
+- **Probability scores** showing model confidence
+- **Confidence margins** (how much above threshold)
+- **Audio clips** of suspected events for manual verification
+
+## Retraining (In Development)
+
+**Status**: Currently in development - use with caution
+
+A complete pipeline to retrain models with your own annotated data. This is actively being improved and may have bugs or incomplete features.
+
+### Development Setup for Retraining
+
+```bash
+# Install UV package manager (recommended for development)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Run retraining pipeline (experimental)
+cd retraining_scripts
+uv run python run_complete_pipeline.py
+```
+
+**Documentation for Retraining**:
 - **Quick Start**: [retraining_scripts/QUICK_START.md](retraining_scripts/QUICK_START.md) 
 - **Full Guide**: [retraining_scripts/README.md](retraining_scripts/README.md)
 
-### **🎯 For deployment**
-Use our pre-trained models to detect bomb fishing events within raw HydroMoth audio (sampled at 8 kHz). Place the model and your raw data in suitable folders, then run the following:
-
-#### Modern .keras Models (Recommended)
-```bash
-# Run inference with trained model
-cd retraining_scripts
-uv run python parent_script.py --model-path ../models/your_model.keras --input-dir /path/to/audio/files
-
-# With specific output directory
-uv run python parent_script.py --model-path ../models/your_model.keras --input-dir /path/to/audio --output-dir results/
-```
-
-#### Legacy Models (Directory Format)
-```bash
-# Requires conda environment setup
-conda activate conda-bomb-env
-cd retraining_scripts
-python parent_script.py --model-path ../code/model --input-dir /path/to/audio/files
-```
-
-## Project Structure
-
-```
-Bomb-Fishing/
-├── retraining_scripts/       # Code used in the original study
-├── retraining_scripts/       # Retraining pipeline
-│   ├── README.md             # Complete retraining documentation
-│   ├── QUICK_START.md        # 5-minute setup guide
-│   ├── run_complete_pipeline.py  # One-click full pipeline
-│   ├── data_preprocessing.py     # Audio data processing
-│   ├── apply_augmentation.py     # Data augmentation
-│   ├── create_train_test_split.py # Dataset splitting
-│   ├── extract_features.py       # MFCC feature extraction
-│   ├── train_model.py            # AutoKeras model training
-│   ├── eval_model.py             # Model evaluation
-│   └── tune_threshold.py         # Decision threshold optimization
-├── code/                     # Legacy inference infrastructure
-│   └── model/                # Legacy model (directory format)
-├── models/                   # Modern trained models (.keras files)
-├── set_up/                   # Environment configurations
-│   └── linux_env.yml           # Conda environment for legacy models
-└── data/                     # Your datasets (created during setup)
-    ├── compressed_new_data/     # Raw compressed audio files
-    ├── annotated_spreadsheets/  # CSV annotation files
-    └── processed_new_data/      # Processed audio (auto-generated)
-```
+**Future Improvements** (in development):
+- GPU support for inference
+- Modern .keras model format
+- Improved model architecture
+- Better preprocessing pipeline
 
 ## Environment Setup
 
-### Option 1: UV (Recommended - Zero Config)
+### For Inference (Legacy Model) - Required
+
 ```bash
-# Install UV package manager (if not already installed)
+# Create conda environment with exact dependencies
+conda env create -f archive/set_up/linux_env.yml
+conda activate conda-bomb-env
+```
+
+### For Development/Retraining - Experimental
+
+#### Option 1: UV (Recommended for Development)
+```bash
+# Install UV package manager
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# UV automatically manages all dependencies from pyproject.toml
-# No virtual environment setup needed
+# UV automatically manages dependencies from pyproject.toml
 uv run python --version  # Test that UV works
-
-# Dependencies are automatically installed when you run scripts
-uv run python retraining_scripts/parent_script.py --help
 ```
-### Option 2: UV with Manual Environment
+
+#### Option 2: UV with Manual Environment
 ```bash
 uv venv .venv
 source .venv/bin/activate
 uv pip install -e .
 ```
 
-### Option 3: Automated UV Setup
-```bash
-./rebuild_environment_uv.sh
+
+
+## Project Structure
+
 ```
-
-### Option 4: Conda (Traditional)
-```bash
-conda env create -f set_up/linux_env.yml
-conda activate conda-bomb-env
+Bomb-Fishing/
+├── inference/                # 🎯 Production-ready inference scripts
+│   ├── inference_parent.py      # 🎯 Main inference script (EDIT PATHS HERE)
+│   ├── inference_child.py       # Child process for batch processing
+│   └── README.md                # Inference documentation
+├── models/                   # Trained models
+│   └── legacy_model/            # Original study model (TensorFlow SavedModel)
+│       ├── saved_model.pb
+│       ├── keras_metadata.pb
+│       └── variables/
+├── archive/                  # 📚 Original study code & data
+│   ├── model_training/          # Jupyter notebooks from original study
+│   ├── model_deployment/        # Legacy deployment scripts and code
+│   ├── misc/                    # Analysis scripts and notebooks from study
+│   └── README.md                # Original study documentation
+├── set_up/                   # 🔧 Environment configurations
+│   ├── linux_env.yml           # Conda environment for legacy model inference
+│   └── get_gpu_working.md       # GPU setup guide
+├── retraining_scripts/       # Development - model retraining pipeline
+│   ├── README.md                # Experimental - use with caution
+│   ├── QUICK_START.md
+│   ├── run_complete_pipeline.py
+│   ├── data_preprocessing.py
+│   ├── extract_features.py
+│   ├── train_model.py
+│   ├── eval_model.py
+│   └── tune_threshold.py
+├── misc/                     # Utility scripts and notebooks
+├── data/                     # Your datasets (create during setup)
+└── logs/                     # Training logs and outputs
 ```
-
-
-
-## Model Formats
-
-| Model Type | Format | Environment | Usage |
-|---------------|-----------|----------------|----------|
-| **Modern (.keras)** | Single `.keras` file | UV + Python 3.9+ | `uv run python retraining_scripts/parent_script.py --model-path model.keras` |
-| **Legacy (directory)** | `model/` folder | Conda + TF 2.10 | `conda activate env && python retraining_scripts/parent_script.py --model-path model/` |
 
 ## Getting Started Checklist
 
-### Data Setup
-- [ ] **Create Data Directories**: 
-  ```bash
-  mkdir -p data/compressed_new_data data/annotated_spreadsheets
-  ```
-- [ ] **Prepare Data**: Place `.zip` files in `data/compressed_new_data/`
-- [ ] **Add Annotations**: Place `.csv` files in `data/annotated_spreadsheets/`
-- [ ] **Ensure Matching Names**: CSV and ZIP files must have identical names
-  - Example: `north_2024_feb_22.zip` ↔ `north_2024_feb_22.csv`
-  - Format: `[region]_[YYYY]_[MMM]_[DD]` or `[region]_[YYYY]_[MMM][DD]`
+### For Inference Only
+- [ ] **Install Conda**: Download from [conda.io](https://docs.conda.io/en/latest/miniconda.html)
+- [ ] **Create Environment**: `conda env create -f archive/set_up/linux_env.yml`
+- [ ] **Activate Environment**: `conda activate conda-bomb-env`
+- [ ] **Edit Paths**: Update `inference/inference_parent.py` with your paths
+- [ ] **Prepare Audio**: Place WAV files (8kHz) in your input directory
+- [ ] **Run Inference**: `cd inference && python inference_parent.py`
 
-### Environment Setup  
+### For Development/Retraining (Experimental)
 - [ ] **Install UV**: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- [ ] **macOS Users**: Update `pyproject.toml` dependencies:
-  ```toml
-  "tensorflow-macos>=2.16.0",
-  "tensorflow-metal>=0.8.0",
-  ```
-
-### Pipeline Execution
+- [ ] **Prepare Data**: See [retraining_scripts/README.md](retraining_scripts/README.md)
 - [ ] **Run Pipeline**: `cd retraining_scripts && uv run python run_complete_pipeline.py`
-- [ ] **Evaluate Results**: Check `models/` for trained `.keras` files
+- [ ] **Note**: This is experimental - expect issues and incomplete features
 
+## Model Information
 
+| Model | Status | Format | Environment | Use Case |
+|-------|--------|--------|-------------|----------|
+| **Legacy Model** | ✅ Production | TensorFlow SavedModel | Conda + TF 2.10 | Inference on new data |
+| **New Models** | ⚠️ In Development | .keras (planned) | UV + Python 3.9+ | Future improved models |
 
+## Development Status
+
+- **Production Ready**: Inference with legacy model
+- **In Development**: Model retraining pipeline
+- **Planned**: GPU support, improved models, modern .keras format
+
+The retraining scripts and modern model formats are actively being developed. Use the legacy inference pipeline for reliable results.
+
+## Citation
+
+If you use this code in your research, please cite:
+
+```
+Williams et al., (2025). Widespread bomb fishing in Indo-pacific archipelago revealed through 
+machine learning accelerated passive acoustic monitoring. [Journal details pending publication]
+```
+
+## License
+
+See [LICENSE](LICENSE) for details.
+
+---
+
+**Need Help?** 
+- For inference issues: Check that your audio is 8kHz WAV format and paths are correctly set
+- For development questions: See the experimental documentation in `retraining_scripts/`
+- For general questions: Please refer to the original study (link pending publication)

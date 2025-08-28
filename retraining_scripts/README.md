@@ -56,7 +56,7 @@ uv pip install -e .
 #### Option 3: Automated UV Script
 ```bash
 # From project root
-./rebuild_environment_uv.sh
+uv venv .venv && source .venv/bin/activate && uv pip install -e .
 ```
 
 #### Option 4: Conda (Traditional)
@@ -524,7 +524,7 @@ For existing models in directory format (e.g., `code/model/`):
 
 ## Additional Resources
 
-- **Environment setup**: `../rebuild_environment_uv.sh` - Automated UV setup script
+- **Manual UV setup**: Use `uv venv .venv && source .venv/bin/activate && uv pip install -e .`
 - **Inference guide**: `../INFERENCE_INSTRUCTIONS.md`
 - **Project structure**: See main `../README.md` for overview
 
