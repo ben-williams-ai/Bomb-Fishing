@@ -113,8 +113,8 @@ uv pip install -e .
 
 ```
 Bomb-Fishing/
-├── inference/                # 🎯 Production-ready inference scripts
-│   ├── inference_parent.py      # 🎯 Main inference script (EDIT PATHS HERE)
+├── inference/                # Production-ready inference scripts
+│   ├── inference_parent.py      # Main inference script (EDIT PATHS HERE)
 │   ├── inference_child.py       # Child process for batch processing
 │   └── README.md                # Inference documentation
 ├── models/                   # Trained models
@@ -122,12 +122,12 @@ Bomb-Fishing/
 │       ├── saved_model.pb
 │       ├── keras_metadata.pb
 │       └── variables/
-├── archive/                  # 📚 Original study code & data
+├── archive/                  # Original study code & data
 │   ├── model_training/          # Jupyter notebooks from original study
 │   ├── model_deployment/        # Legacy deployment scripts and code
 │   ├── misc/                    # Analysis scripts and notebooks from study
 │   └── README.md                # Original study documentation
-├── set_up/                   # 🔧 Environment configurations
+├── set_up/                   # Environment configurations
 │   ├── linux_env.yml           # Conda environment for legacy model inference
 │   └── get_gpu_working.md       # GPU setup guide
 ├── retraining_scripts/       # Development - model retraining pipeline
