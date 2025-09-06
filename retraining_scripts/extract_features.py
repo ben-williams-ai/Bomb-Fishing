@@ -42,13 +42,13 @@ class FeatureExtractor:
         Args:
             data_dir: Base data directory (default: "../data")
             input_dir: Directory containing train/test split data (default: data_dir/final_new_dataset)
-            output_dir: Output directory for feature files (default: current directory)
+            output_dir: Output directory for feature files (default: data_dir)
         """
         self.data_dir = Path(data_dir)
         self.final_dataset_dir = (
             Path(input_dir) if input_dir else self.data_dir / "final_new_dataset"
         )
-        self.output_dir = Path(output_dir) if output_dir else Path(".")
+        self.output_dir = Path(output_dir) if output_dir else self.data_dir
 
         # Directory paths
         self.train_dir = self.final_dataset_dir / "train"
@@ -405,8 +405,7 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default=".",
-        help="Output directory for feature pickle files",
+        help="Output directory for feature pickle files. Default: data-dir",
     )
 
     args = parser.parse_args()
