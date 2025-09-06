@@ -33,7 +33,7 @@ cd inference
 # - decision_threshold: tune detection sensitivity
 
 # For legacy model (requires conda)
-conda env create -f ../archive/set_up/linux_env.yml
+conda env create -f set_up/linux_env.yml
 conda activate conda-bomb-env
 python inference_parent.py
 
@@ -85,7 +85,7 @@ uv run python run_complete_pipeline.py
 
 ```bash
 # Create conda environment with exact dependencies
-conda env create -f archive/set_up/linux_env.yml
+conda env create -f set_up/linux_env.yml
 conda activate conda-bomb-env
 ```
 
@@ -160,7 +160,7 @@ Bomb-Fishing/
 
 ### For Inference Only
 - [ ] **Install Conda**: Download from [conda.io](https://docs.conda.io/en/latest/miniconda.html)
-- [ ] **Create Environment**: `conda env create -f archive/set_up/linux_env.yml`
+- [ ] **Create Environment**: `conda env create -f set_up/linux_env.yml`
 - [ ] **Activate Environment**: `conda activate conda-bomb-env`
 - [ ] **Edit Paths**: Update `inference/inference_parent.py` with your paths
 - [ ] **Prepare Audio**: Place WAV files (8kHz) in your input directory
