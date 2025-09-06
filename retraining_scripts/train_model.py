@@ -130,8 +130,8 @@ class ModelTrainer:
         self.data_dir = Path(data_dir)
 
         # Set paths to pickle files
-        self.train_pickle_file = train_pickle or "train_features_labels_2.pickle"
-        self.test_pickle_file = test_pickle or "test_features_labels_2.pickle"
+        self.train_pickle_file = train_pickle or "train_features_labels.pickle"
+        self.test_pickle_file = test_pickle or "test_features_labels.pickle"
 
         # Training parameters (optimized for GPU)
         self.EPOCHS = 100
@@ -1179,13 +1179,13 @@ def main():
     parser.add_argument(
         "--train-pickle",
         type=str,
-        default="train_features_labels_2.pickle",
+        default="train_features_labels.pickle",
         help="Path to training features pickle file",
     )
     parser.add_argument(
         "--test-pickle",
         type=str,
-        default="test_features_labels_2.pickle",
+        default="test_features_labels.pickle",
         help="Path to test features pickle file",
     )
     parser.add_argument(

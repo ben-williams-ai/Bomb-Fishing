@@ -63,8 +63,8 @@ class FeatureExtractor:
         random.seed(self.seed)
 
         # Output pickle files
-        self.train_pickle_file = self.output_dir / "train_features_labels_2.pickle"
-        self.test_pickle_file = self.output_dir / "test_features_labels_2.pickle"
+        self.train_pickle_file = self.output_dir / "train_features_labels.pickle"
+        self.test_pickle_file = self.output_dir / "test_features_labels.pickle"
 
         # Verify test directory exists
         if not self.test_dir.exists():
