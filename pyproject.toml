@@ -64,5 +64,4 @@ gpu = [
 ]
 cpu = [
     "tensorflow-cpu==2.16.2",
-]
 ] 
