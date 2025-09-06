@@ -112,7 +112,7 @@ class ModelTrainer:
 
     def __init__(
         self,
-        data_dir: str = ".",
+        data_dir: str = "../data",
         train_pickle: Optional[str] = None,
         test_pickle: Optional[str] = None,
         models_dir: Optional[str] = None,
@@ -121,7 +121,7 @@ class ModelTrainer:
         """Initialize ModelTrainer with configurable I/O paths.
 
         Args:
-            data_dir: Base data directory (default: ".")
+            data_dir: Base data directory (default: "../data")
             train_pickle: Path to training features pickle file (default: train_features_labels_2.pickle)
             test_pickle: Path to test features pickle file (default: test_features_labels_2.pickle)
             models_dir: Directory to save trained models (default: ../models)
@@ -1173,7 +1173,9 @@ def main():
     )
 
     # I/O arguments
-    parser.add_argument("--data-dir", type=str, default=".", help="Base data directory")
+    parser.add_argument(
+        "--data-dir", type=str, default="../data", help="Base data directory"
+    )
     parser.add_argument(
         "--train-pickle",
         type=str,
