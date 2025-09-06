@@ -14,12 +14,23 @@ mkdir -p data/compressed_new_data data/annotated_spreadsheets
 # macOS users: Update pyproject.toml dependencies first (see below)
 uv run python --version  # Test that UV works
 
+# For GPU support:
+uv sync --group gpu
+
+# For CPU support:
+uv sync --group cpu
+
 # 3. Run complete pipeline (UV automatically installs dependencies)
 cd retraining_scripts
-uv run python run_complete_pipeline.py
 
-# OR run step by step:
-uv run python data_preprocessing.py && uv run python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22 && uv run python apply_augmentation.py && uv run python extract_features.py && uv run python train_model.py
+# GPU-accelerated training:
+uv run --group gpu python run_complete_pipeline.py
+
+# CPU training:
+uv run --group cpu python run_complete_pipeline.py
+
+# OR run step by step with GPU acceleration:
+uv run --group gpu python data_preprocessing.py && uv run --group gpu python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22 && uv run --group gpu python apply_augmentation.py && uv run --group gpu python extract_features.py && uv run --group gpu python train_model.py
 ```
 
 ## Why UV?
@@ -77,7 +88,7 @@ After each step, you should see:
 1. **Data preprocessing**: Files in `data/processed_new_data/[month]/`
 2. **Train/test split**: Files in `data/final_new_dataset/train/` and `test/`
 3. **Augmentation**: 10x more YB files, 2x more NB files
-4. **Feature extraction**: `train_features_labels_2.pickle` and `test_features_labels_2.pickle`
+4. **Feature extraction**: `data/train_features_labels.pickle` and `data/test_features_labels.pickle`
 5. **Training**: `models/retrained_best_model.keras` with >85% accuracy
 
 ## Quick Troubleshooting

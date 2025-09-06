@@ -12,13 +12,24 @@ mkdir -p data/compressed_new_data data/annotated_spreadsheets
 cd /path/to/Bomb-Fishing
 # UV automatically manages the environment - no activation needed!
 
+# For GPU support:
+uv sync --group gpu
+
+# For CPU support:
+uv sync --group cpu
+
 # 3. Run complete pipeline
 cd retraining_scripts
-uv run python data_preprocessing.py
-uv run python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22
-uv run python apply_augmentation.py  
-uv run python extract_features.py
-uv run python train_model.py
+
+# GPU-accelerated training:
+uv run --group gpu python data_preprocessing.py
+uv run --group gpu python create_train_test_split.py --train-months 2023_jun_28 --test-months 2024_feb_22
+uv run --group gpu python apply_augmentation.py  
+uv run --group gpu python extract_features.py
+uv run --group gpu python train_model.py
+
+# CPU training (local development):
+uv run --group cpu python train_model.py
 
 # Or run the complete pipeline in one command:
 uv run python run_complete_pipeline.py
@@ -38,6 +49,18 @@ uv run python --version  # Test that UV is working
 
 # All dependencies are automatically installed from pyproject.toml
 # when you run scripts with 'uv run'
+
+# GPU support (Lightning AI Studio, CUDA environments):
+uv sync --group gpu
+uv run --group gpu python retraining_scripts/train_model.py
+
+# CPU support (local development, macOS):
+uv sync --group cpu  
+uv run --group cpu python retraining_scripts/train_model.py
+
+# Auto-detect (default):
+uv sync
+uv run python retraining_scripts/train_model.py
 
 # macOS Users: Update pyproject.toml first:
 # Change tensorflow dependencies to:
@@ -220,11 +243,14 @@ data/final_new_dataset/
 # UV (Recommended)
 uv run python extract_features.py
 
+# GPU-accelerated feature extraction:
+uv run --group gpu python extract_features.py
+
 # With custom directories
 uv run python extract_features.py \
   --data-dir ../data \
   --input-dir ../data/final_new_dataset \
-  --output-dir .
+  --output-dir ../data
 
 # Alternative: If using activated virtual environment
 python extract_features.py --help
@@ -232,14 +258,15 @@ python extract_features.py --help
 
 **What it does:**
 - Extracts MFCC features from all audio files
-- **Features**: 13 MFCC coefficients, mean-aggregated
+- **Features**: 32 MFCC coefficients (updated)
 - **Window**: 2048 FFT, 512 hop length
-- **Input shape**: (13,) per audio file
+- **Input shape**: (32, time_steps, 1) per audio file
 - Saves features and labels as pickle files for training
+- **Output location**: `data/` directory by default
 
 **Output files:**
-- `train_features_labels_2.pickle` - Training data
-- `test_features_labels_2.pickle` - Test data
+- `data/train_features_labels.pickle` - Training data
+- `data/test_features_labels.pickle` - Test data
 
 ### Step 5: Model Training
 
@@ -247,10 +274,17 @@ python extract_features.py --help
 # UV (Recommended)
 uv run python train_model.py
 
+# GPU-accelerated training:
+uv run --group gpu python train_model.py
+
+# CPU training:
+uv run --group cpu python train_model.py
+
 # With custom paths
 uv run python train_model.py \
-  --train-pickle train_features_labels_2.pickle \
-  --test-pickle test_features_labels_2.pickle \
+  --data-dir ../data \
+  --train-pickle train_features_labels.pickle \
+  --test-pickle test_features_labels.pickle \
   --models-dir ../models \
   --logs-dir ../logs
 
@@ -373,10 +407,10 @@ uv run python data_preprocessing.py --verify-month 2023_aug_21 --verify-files YB
 uv run python parent_script.py --model-path ../models/retrained_best_model.keras --input-dir test_data/
 
 # Full evaluation on new .keras model
-uv run python eval_model.py --model-path models/retrained_best_model.keras --test-pickle test_features_labels_2.pickle
+uv run python eval_model.py --model-path models/retrained_best_model.keras --test-pickle test_features_labels.pickle
 
 # Threshold tuning for new .keras model
-uv run python tune_threshold.py --model-path models/retrained_best_model.keras --train-pickle combined_train_features_labels.pickle
+uv run python tune_threshold.py --model-path models/retrained_best_model.keras --train-pickle train_features_labels.pickle
 ```
 
 #### For Legacy model/ Directory Models
@@ -389,10 +423,10 @@ conda env create -f ../set_up/linux_env.yml -n conda-bomb-env
 conda activate conda-bomb-env
 
 # Legacy model evaluation
-python eval_model.py --model-path ../code/model --test-pickle test_features_labels_2.pickle
+python eval_model.py --model-path ../code/model --test-pickle test_features_labels.pickle
 
 # Legacy threshold tuning  
-python tune_threshold.py --model-path ../code/model --train-pickle combined_train_features_labels.pickle
+python tune_threshold.py --model-path ../code/model --train-pickle train_features_labels.pickle
 
 # Legacy batch inference (parent/child scripts)
 python parent_script.py  # Edit paths in script first
@@ -474,7 +508,7 @@ To force re-processing:
 ```bash
 # Remove intermediate directories
 rm -rf data/extracted data/processed_new_data data/final_new_dataset
-rm -f *_features_labels_2.pickle
+rm -f data/*_features_labels.pickle
 
 # Then re-run pipeline
 ```
@@ -597,9 +631,9 @@ python tune_threshold.py --model-path ../code/model --train-pickle combined_trai
 **For new .keras models:**
 ```bash
 # Modern approach
-uv run python eval_model.py --model-path models/retrained_best_model.keras --test-pickle test_features_labels_2.pickle
+uv run python eval_model.py --model-path models/retrained_best_model.keras --test-pickle test_features_labels.pickle
 
-uv run python tune_threshold.py --model-path models/retrained_best_model.keras --train-pickle combined_train_features_labels.pickle
+uv run python tune_threshold.py --model-path models/retrained_best_model.keras --train-pickle train_features_labels.pickle
 ```
 
 ### Legacy vs New Model Compatibility

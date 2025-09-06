@@ -98,6 +98,18 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # UV automatically manages dependencies from pyproject.toml
 uv run python --version  # Test that UV works
+
+# GPU support:
+uv sync --group gpu
+uv run --group gpu python retraining_scripts/train_model.py
+
+# CPU support:
+uv sync --group cpu  
+uv run --group cpu python retraining_scripts/train_model.py
+
+# Default (auto-detects available hardware)
+uv sync
+uv run python retraining_scripts/train_model.py
 ```
 
 #### Option 2: UV with Manual Environment
