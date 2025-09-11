@@ -20,7 +20,7 @@ Use our pre-trained legacy model to detect bomb fishing events in raw HydroMoth 
 
 ### Running Inference 
 
-**Modern Inference (Recommended)**: Use the enhanced inference scripts that support both legacy and modern models:
+**Inference (supported)**: Use the inference scripts that support both the legacy and retrained models:
 
 ```bash
 # Navigate to inference directory
@@ -45,12 +45,11 @@ uv run python inference_parent.py
 
 ### Output
 
-The inference will generate enhanced CSV files with detected bomb fishing events, including:
+The inference will generate audio files of suspected bomb fishing incidents for manual verification alongside CSV files with:
 - **File names** where events were detected
 - **Timestamps** (HH:MM:SS) of detected events  
 - **Probability scores** showing model confidence
 - **Confidence margins** (how much above threshold)
-- **Audio clips** of suspected events for manual verification
 
 ## Retraining (In Development)
 
